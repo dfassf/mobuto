@@ -1,12 +1,15 @@
 import { create } from 'zustand'
 import { v4 as uuidv4 } from 'uuid'
 import type { Todo, Quadrant, CreateTodoInput, QuadrantHistoryEntry } from '../models/todo'
+import type { Category, CreateCategoryInput } from '../models/category'
 import { resolveQuadrant } from '../constants/quadrant'
 import type { StorageAdapter } from '../adapters/storageAdapter'
 import { LocalStorageAdapter } from '../adapters/localStorageAdapter'
 
 interface TodoState {
   todos: Todo[]
+  categories: Category[]
+
   loadTodos: () => void
   addTodo: (input: CreateTodoInput) => void
   updateTodoTitle: (id: string, title: string) => void
@@ -14,6 +17,11 @@ interface TodoState {
   restoreTodo: (id: string) => void
   deleteTodo: (id: string) => void
   moveTodoToQuadrant: (id: string, targetQuadrant: Quadrant) => void
+
+  loadCategories: () => void
+  addCategory: (input: CreateCategoryInput) => void
+  updateCategory: (id: string, input: CreateCategoryInput) => void
+  deleteCategory: (id: string) => void
 }
 
 const storage: StorageAdapter = new LocalStorageAdapter()
@@ -31,6 +39,7 @@ function getNextOrder(todos: Todo[], quadrant: Quadrant): number {
 
 export const useTodoStore = create<TodoState>((set, get) => ({
   todos: [],
+  categories: [],
 
   loadTodos: () => {
     const loaded = storage.loadAll()
@@ -50,6 +59,7 @@ export const useTodoStore = create<TodoState>((set, get) => ({
       updatedAt: now,
       order: getNextOrder(get().todos, quadrant),
       quadrantHistory: [],
+      categoryId: input.categoryId,
     }
 
     const updated = [...get().todos, newTodo]
@@ -113,5 +123,45 @@ export const useTodoStore = create<TodoState>((set, get) => ({
     })
     set({ todos: updated })
     storage.save(updated)
+  },
+
+  loadCategories: () => {
+    const loaded = storage.loadCategories()
+    set({ categories: loaded })
+  },
+
+  addCategory: (input: CreateCategoryInput) => {
+    const newCategory: Category = {
+      id: uuidv4(),
+      name: input.name,
+      color: input.color,
+      createdAt: Date.now(),
+    }
+
+    const updated = [...get().categories, newCategory]
+    set({ categories: updated })
+    storage.saveCategories(updated)
+  },
+
+  updateCategory: (id: string, input: CreateCategoryInput) => {
+    const updated = get().categories.map((cat) => {
+      if (cat.id !== id) return cat
+      return { ...cat, name: input.name, color: input.color }
+    })
+    set({ categories: updated })
+    storage.saveCategories(updated)
+  },
+
+  deleteCategory: (id: string) => {
+    const updatedCategories = get().categories.filter((cat) => cat.id !== id)
+    set({ categories: updatedCategories })
+    storage.saveCategories(updatedCategories)
+
+    const updatedTodos = get().todos.map((todo) => {
+      if (todo.categoryId !== id) return todo
+      return { ...todo, categoryId: undefined, updatedAt: Date.now() }
+    })
+    set({ todos: updatedTodos })
+    storage.save(updatedTodos)
   },
 }))

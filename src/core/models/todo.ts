@@ -18,10 +18,12 @@ export interface Todo {
   completedAt?: number
   order: number
   quadrantHistory: QuadrantHistoryEntry[]
+  categoryId?: string
 }
 
 export interface CreateTodoInput {
   title: string
   isUrgent: boolean
   isImportant: boolean
+  categoryId?: string
 }

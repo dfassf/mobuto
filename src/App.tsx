@@ -4,10 +4,12 @@ import { HomePage } from './ui/pages/HomePage'
 
 function App() {
   const loadTodos = useTodoStore((state) => state.loadTodos)
+  const loadCategories = useTodoStore((state) => state.loadCategories)
 
   useEffect(() => {
     loadTodos()
-  }, [loadTodos])
+    loadCategories()
+  }, [loadTodos, loadCategories])
 
   return <HomePage />
 }

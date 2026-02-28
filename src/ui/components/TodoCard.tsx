@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { useDraggable } from '@dnd-kit/core'
 import type { Todo } from '../../core/models/todo'
+import { getCategoryColor } from '../../core/models/category'
 import { useTodoStore } from '../../core/stores/todoStore'
 
 interface TodoCardProps {
@@ -8,7 +9,7 @@ interface TodoCardProps {
 }
 
 export function TodoCard({ todo }: TodoCardProps) {
-  const { completeTodo, restoreTodo, deleteTodo, updateTodoTitle } = useTodoStore()
+  const { completeTodo, restoreTodo, deleteTodo, updateTodoTitle, categories } = useTodoStore()
   const [isEditing, setIsEditing] = useState(false)
   const [editTitle, setEditTitle] = useState(todo.title)
 
@@ -77,6 +78,17 @@ export function TodoCard({ todo }: TodoCardProps) {
               : 'text-slate-800 cursor-pointer'
         }`}
       />
+
+      {todo.categoryId && (() => {
+        const category = categories.find((c) => c.id === todo.categoryId)
+        if (!category) return null
+        const color = getCategoryColor(category.color)
+        return (
+          <span className={`shrink-0 rounded-full px-2 py-0.5 text-[11px] font-medium ${color.bg} ${color.text}`}>
+            {category.name}
+          </span>
+        )
+      })()}
 
       <div className="flex shrink-0 gap-1 opacity-0 transition-opacity group-hover:opacity-100">
         {!isCompleted && (
