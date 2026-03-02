@@ -1,5 +1,6 @@
-import { useState } from 'react'
-import { useDraggable } from '@dnd-kit/core'
+import { useState, useRef, useEffect } from 'react'
+import { useSortable } from '@dnd-kit/sortable'
+import { CSS } from '@dnd-kit/utilities'
 import type { Todo } from '../../core/models/todo'
 import { getCategoryColor } from '../../core/models/category'
 import { useTodoStore } from '../../core/stores/todoStore'
@@ -9,16 +10,42 @@ interface TodoCardProps {
 }
 
 export function TodoCard({ todo }: TodoCardProps) {
-  const { completeTodo, restoreTodo, deleteTodo, updateTodoTitle, categories } = useTodoStore()
+  const { completeTodo, restoreTodo, deleteTodo, updateTodoTitle, updateTodoCategory, categories } = useTodoStore()
   const [isEditing, setIsEditing] = useState(false)
   const [editTitle, setEditTitle] = useState(todo.title)
+  const [showCategoryPicker, setShowCategoryPicker] = useState(false)
+  const pickerRef = useRef<HTMLDivElement>(null)
+
+  useEffect(() => {
+    if (!showCategoryPicker) return
+    const handleClickOutside = (e: MouseEvent) => {
+      if (pickerRef.current && !pickerRef.current.contains(e.target as Node)) {
+        setShowCategoryPicker(false)
+      }
+    }
+    document.addEventListener('mousedown', handleClickOutside)
+    return () => document.removeEventListener('mousedown', handleClickOutside)
+  }, [showCategoryPicker])
 
   const isCompleted = todo.status === 'completed'
 
-  const { attributes, listeners, setNodeRef, isDragging } = useDraggable({
+  const {
+    attributes,
+    listeners,
+    setNodeRef,
+    setActivatorNodeRef,
+    transform,
+    transition,
+    isDragging,
+  } = useSortable({
     id: todo.id,
-    disabled: isCompleted || isEditing,
+    disabled: isEditing,
   })
+
+  const style = {
+    transform: CSS.Transform.toString(transform),
+    transition,
+  }
 
   const handleSaveEdit = () => {
     const trimmed = editTitle.trim()
@@ -39,12 +66,29 @@ export function TodoCard({ todo }: TodoCardProps) {
   return (
     <div
       ref={setNodeRef}
-      {...listeners}
+      style={style}
       {...attributes}
       className={`group flex items-center gap-2 rounded-lg bg-white p-3 shadow-sm border border-slate-100 transition-colors hover:border-slate-200 ${
         isDragging ? 'opacity-30' : ''
-      } ${!isCompleted && !isEditing ? 'cursor-grab active:cursor-grabbing' : ''}`}
+      }`}
     >
+      <div
+        ref={setActivatorNodeRef}
+        {...listeners}
+        className="flex shrink-0 cursor-grab items-center text-slate-300 hover:text-slate-400 active:cursor-grabbing"
+        style={{ touchAction: 'none' }}
+        aria-label="드래그 핸들"
+      >
+        <svg className="h-4 w-4" fill="currentColor" viewBox="0 0 24 24">
+          <circle cx="9" cy="6" r="1.5" />
+          <circle cx="15" cy="6" r="1.5" />
+          <circle cx="9" cy="12" r="1.5" />
+          <circle cx="15" cy="12" r="1.5" />
+          <circle cx="9" cy="18" r="1.5" />
+          <circle cx="15" cy="18" r="1.5" />
+        </svg>
+      </div>
+
       <button
         onClick={() => (isCompleted ? restoreTodo(todo.id) : completeTodo(todo.id))}
         className={`flex h-5 w-5 shrink-0 items-center justify-center rounded-full border-2 transition-colors ${
@@ -79,18 +123,57 @@ export function TodoCard({ todo }: TodoCardProps) {
         }`}
       />
 
-      {todo.categoryId && (() => {
-        const category = categories.find((c) => c.id === todo.categoryId)
-        if (!category) return null
-        const color = getCategoryColor(category.color)
-        return (
-          <span className={`shrink-0 rounded-full px-2 py-0.5 text-[11px] font-medium ${color.bg} ${color.text}`}>
-            {category.name}
-          </span>
-        )
-      })()}
+      {categories.length > 0 && (
+        <div className="relative shrink-0" ref={pickerRef}>
+          {(() => {
+            const category = categories.find((c) => c.id === todo.categoryId)
+            const color = category ? getCategoryColor(category.color) : null
+            return (
+              <>
+                <button
+                  onPointerDown={(e) => e.stopPropagation()}
+                  onClick={() => setShowCategoryPicker(!showCategoryPicker)}
+                  className={`rounded-full px-2 py-0.5 text-[11px] font-medium transition-colors ${
+                    color
+                      ? `${color.bg} ${color.text} hover:opacity-80`
+                      : 'bg-slate-100 text-slate-400 hover:bg-slate-200'
+                  }`}
+                >
+                  {category ? category.name : '없음'}
+                </button>
 
-      <div className="flex shrink-0 gap-1 opacity-0 transition-opacity group-hover:opacity-100">
+                {showCategoryPicker && (
+                  <div className="absolute right-0 top-full z-50 mt-1 w-40 rounded-lg border border-slate-200 bg-white p-2 shadow-lg">
+                    <button
+                      onClick={() => { updateTodoCategory(todo.id, undefined); setShowCategoryPicker(false) }}
+                      className="w-full rounded px-2 py-1.5 text-left text-xs text-slate-400 hover:bg-slate-50"
+                    >
+                      없음
+                    </button>
+                    {categories.map((cat) => {
+                      const catColor = getCategoryColor(cat.color)
+                      return (
+                        <button
+                          key={cat.id}
+                          onClick={() => { updateTodoCategory(todo.id, cat.id); setShowCategoryPicker(false) }}
+                          className={`flex w-full items-center gap-2 rounded px-2 py-1.5 text-left text-xs hover:bg-slate-50 ${
+                            cat.id === todo.categoryId ? 'font-medium' : ''
+                          }`}
+                        >
+                          <span className={`h-2.5 w-2.5 rounded-full ${catColor.dot}`} />
+                          <span className="text-slate-700">{cat.name}</span>
+                        </button>
+                      )
+                    })}
+                  </div>
+                )}
+              </>
+            )
+          })()}
+        </div>
+      )}
+
+      <div className="flex shrink-0 gap-1">
         {!isCompleted && (
           <button
             onClick={() => setIsEditing(true)}

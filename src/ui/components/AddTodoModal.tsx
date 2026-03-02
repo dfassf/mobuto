@@ -68,15 +68,15 @@ export function AddTodoModal({ isOpen, onClose }: AddTodoModalProps) {
     if (e.key === 'Escape') resetAndClose()
   }
 
-  const previewQuadrant = step === 'important'
-    ? resolveQuadrant(isUrgent, true)
-    : null
+  const previewYes = step === 'important' ? resolveQuadrant(isUrgent, true) : null
+  const previewNo = step === 'important' ? resolveQuadrant(isUrgent, false) : null
 
   return (
     <>
       <div className="fixed inset-0 z-40 bg-black/30" onClick={resetAndClose} />
 
       <div className="fixed inset-x-0 bottom-0 z-50 mx-auto max-w-lg rounded-t-2xl bg-white p-6 shadow-xl sm:bottom-auto sm:top-1/2 sm:-translate-y-1/2 sm:rounded-2xl">
+        <div>
         {step === 'title' && (
           <div>
             <h2 className="mb-4 text-lg font-semibold text-slate-800">할 일 추가</h2>
@@ -120,7 +120,7 @@ export function AddTodoModal({ isOpen, onClose }: AddTodoModalProps) {
             </button>
 
             <h2 className="mb-1 text-lg font-semibold text-slate-800">카테고리 선택</h2>
-            <p className="mb-4 text-sm text-slate-500">분류할 카테고리를 선택하세요</p>
+            <p className="mb-4 text-sm text-slate-500">카테고리를 골라주세요</p>
 
             <div className="flex flex-wrap gap-2">
               <button
@@ -212,24 +212,32 @@ export function AddTodoModal({ isOpen, onClose }: AddTodoModalProps) {
         )}
 
         {step === 'important' && (
-          <div>
             <QuestionStep
               question="중요한가요?"
-              description="장기적 목표에 기여하는 일인가요?"
+              description="나중에 봤을 때 의미 있는 일인가요?"
               onYes={() => handleImportantSelect(true)}
               onNo={() => handleImportantSelect(false)}
               onBack={() => setStep('urgent')}
-            />
-            {previewQuadrant && (
-              <div className="mt-3 flex items-center gap-2 rounded-lg bg-slate-50 px-3 py-2">
-                <span className="text-xs text-slate-400">예를 선택하면:</span>
-                <span className={`text-xs font-medium ${QUADRANT_MAP[previewQuadrant].colorClass}`}>
-                  {QUADRANT_MAP[previewQuadrant].label}
-                </span>
-              </div>
-            )}
-          </div>
+            >
+              {previewYes && previewNo && (
+                <div className="mb-4 flex flex-col gap-1.5 rounded-lg bg-slate-50 px-3 py-2">
+                  <div className="flex items-center gap-2">
+                    <span className="text-xs text-slate-400">예를 고르면:</span>
+                    <span className={`text-xs font-medium ${QUADRANT_MAP[previewYes].colorClass}`}>
+                      {QUADRANT_MAP[previewYes].label}
+                    </span>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <span className="text-xs text-slate-400">아니오를 고르면:</span>
+                    <span className={`text-xs font-medium ${QUADRANT_MAP[previewNo].colorClass}`}>
+                      {QUADRANT_MAP[previewNo].label}
+                    </span>
+                  </div>
+                </div>
+              )}
+            </QuestionStep>
         )}
+        </div>
       </div>
     </>
   )
@@ -241,9 +249,10 @@ interface QuestionStepProps {
   onYes: () => void
   onNo: () => void
   onBack: () => void
+  children?: React.ReactNode
 }
 
-function QuestionStep({ question, description, onYes, onNo, onBack }: QuestionStepProps) {
+function QuestionStep({ question, description, onYes, onNo, onBack, children }: QuestionStepProps) {
   return (
     <div>
       <button
@@ -257,7 +266,9 @@ function QuestionStep({ question, description, onYes, onNo, onBack }: QuestionSt
       </button>
 
       <h2 className="mb-1 text-lg font-semibold text-slate-800">{question}</h2>
-      <p className="mb-6 text-sm text-slate-500">{description}</p>
+      <p className="mb-4 text-sm text-slate-500">{description}</p>
+
+      {children}
 
       <div className="flex gap-3">
         <button

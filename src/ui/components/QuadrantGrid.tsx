@@ -16,8 +16,21 @@ import { TodoCardOverlay } from './TodoCard'
 
 const QUADRANT_ORDER: Quadrant[] = [1, 2, 3, 4]
 
-export function QuadrantGrid() {
-  const { todos, moveTodoToQuadrant } = useTodoStore()
+interface QuadrantGridProps {
+  filterCategoryId: string | null
+}
+
+function parseQuadrantFromId(id: string | number): Quadrant | null {
+  const str = String(id)
+  if (str.startsWith('quadrant-')) {
+    const num = Number(str.replace('quadrant-', ''))
+    if (num >= 1 && num <= 4) return num as Quadrant
+  }
+  return null
+}
+
+export function QuadrantGrid({ filterCategoryId }: QuadrantGridProps) {
+  const { todos, moveTodoToQuadrant, reorderTodo } = useTodoStore()
   const [activeTodo, setActiveTodo] = useState<Todo | null>(null)
 
   const sensors = useSensors(
@@ -37,12 +50,32 @@ export function QuadrantGrid() {
     if (!over) return
 
     const todoId = active.id as string
-    const targetQuadrant = over.id as Quadrant
-
     const todo = todos.find((t) => t.id === todoId)
-    if (!todo || todo.quadrant === targetQuadrant) return
+    if (!todo) return
 
-    moveTodoToQuadrant(todoId, targetQuadrant)
+    // Dropped on a quadrant droppable
+    const targetQuadrant = parseQuadrantFromId(over.id)
+    if (targetQuadrant) {
+      if (todo.quadrant !== targetQuadrant) {
+        moveTodoToQuadrant(todoId, targetQuadrant)
+      }
+      return
+    }
+
+    // Dropped on another todo (same-quadrant reorder)
+    const overTodo = todos.find((t) => t.id === over.id)
+    if (overTodo && overTodo.quadrant === todo.quadrant && overTodo.id !== todo.id) {
+      const siblings = todos
+        .filter((t) => t.quadrant === todo.quadrant && t.status === 'active')
+        .sort((a, b) => a.order - b.order)
+      const overIndex = siblings.findIndex((t) => t.id === overTodo.id)
+      if (overIndex !== -1) {
+        reorderTodo(todoId, overIndex)
+      }
+    } else if (overTodo && overTodo.quadrant !== todo.quadrant) {
+      // Dropped on a todo in a different quadrant
+      moveTodoToQuadrant(todoId, overTodo.quadrant)
+    }
   }
 
   return (
@@ -53,7 +86,7 @@ export function QuadrantGrid() {
     >
       <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
         {QUADRANT_ORDER.map((quadrant) => (
-          <QuadrantPanel key={quadrant} quadrant={quadrant} />
+          <QuadrantPanel key={quadrant} quadrant={quadrant} filterCategoryId={filterCategoryId} />
         ))}
       </div>
 

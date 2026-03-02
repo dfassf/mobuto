@@ -61,6 +61,43 @@ src/
 - **core/ui 분리**: 비즈니스 로직은 UI에 의존하지 않음
 - **피처 플래그**: 분석, 프리미엄, 광고 등 기능별 토글 준비
 
+## 수익화 로드맵
+
+### 1차: 배너 광고 (출시 시점)
+- 사분면 그리드 하단에 리스트형 배너 1개
+- 할 일 추가/완료 등 핵심 플로우에는 광고 없음
+- 앱인토스 인앱 광고 SDK 사용 (`@apps-in-toss/web-framework`)
+
+### 2차: 토스 로그인 + 클라우드 저장 (1차 수익 모델)
+- 토스 로그인 연동 (mTLS 인증서 필요)
+- 유저별 데이터 서버 저장 — localStorage 데이터 유실 방지가 결제 동기
+- `StorageAdapter` → `CloudStorageAdapter` 추가로 전환
+- 인앱 결제로 클라우드 저장 기능 유료화
+
+### 3차: 프리미엄 기능 (2차 수익 모델)
+- 1~2차 운영 데이터 기반으로 프리미엄 기능 결정
+- 후보: 통계/리포트, 카테고리 무제한, 테마, 반복 할 일 등
+
+### 4차: 광고 세분화
+- 무료 유저 대상 전면형 광고 추가 (핵심 플로우 외 구간)
+- 프리미엄 유저는 광고 제거
+
+## 앱인토스 배포
+
+hakamaka(할까말까)와 동일한 구성으로 앱인토스 출시 예정. 참고: `/app-in-toss/` 문서 및 `/hakamaka/frontend/`
+
+### 필요 작업
+- `@apps-in-toss/web-framework` 의존성 추가
+- `granite.config.ts` 설정 (appName, brand, web)
+- `src/intoss.ts` 환경 감지 유틸 추가
+- package.json에 `intoss:dev`, `intoss:build` 스크립트 추가
+- `granite build` → `.ait` 파일 생성 후 콘솔 업로드
+
+### 참고사항
+- TDS(토스 디자인 시스템) 미사용 — Tailwind CSS 유지 (hakamaka 선례)
+- mTLS는 1차 출시에 불필요 (앱인토스 API 미사용 시)
+- 2차에서 토스 로그인/결제 붙일 때 mTLS 적용
+
 ## 라이선스
 
 Private
