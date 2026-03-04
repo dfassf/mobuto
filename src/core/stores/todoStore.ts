@@ -5,7 +5,6 @@ import type { Category, CreateCategoryInput } from '../models/category'
 import { resolveQuadrant } from '../constants/quadrant'
 import type { StorageAdapter } from '../adapters/storageAdapter'
 import { LocalStorageAdapter } from '../adapters/localStorageAdapter'
-import { createSeedTodos, createSeedCategories } from '../data/seedData'
 
 interface TodoState {
   todos: Todo[]
@@ -50,9 +49,8 @@ export const useTodoStore = create<TodoState>((set, get) => ({
   deletedTodo: null,
 
   loadTodos: () => {
-    const seed = createSeedTodos()
-    set({ todos: seed })
-    storage.save(seed)
+    const saved = storage.loadAll()
+    set({ todos: saved })
   },
 
   addTodo: (input: CreateTodoInput) => {
@@ -186,9 +184,8 @@ export const useTodoStore = create<TodoState>((set, get) => ({
   },
 
   loadCategories: () => {
-    const seed = createSeedCategories()
-    set({ categories: seed })
-    storage.saveCategories(seed)
+    const saved = storage.loadCategories()
+    set({ categories: saved })
   },
 
   addCategory: (input: CreateCategoryInput) => {
