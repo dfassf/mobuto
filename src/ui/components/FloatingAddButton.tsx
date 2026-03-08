@@ -7,7 +7,8 @@ export function FloatingAddButton({ isOpen, onClick }: FloatingAddButtonProps) {
   return (
     <button
       onClick={onClick}
-      className={`fixed bottom-6 right-6 z-50 flex h-14 w-14 items-center justify-center rounded-full shadow-lg transition-all hover:scale-105 active:scale-95 sm:bottom-8 sm:right-8 ${
+      style={{ bottom: `calc(1.5rem + env(safe-area-inset-bottom))` }}
+      className={`fixed right-6 z-50 flex h-14 w-14 items-center justify-center rounded-full shadow-lg transition-all hover:scale-105 active:scale-95 sm:right-8 ${
         isOpen
           ? 'bg-slate-500 text-white hover:bg-slate-400'
           : 'bg-slate-800 text-white hover:bg-slate-700'

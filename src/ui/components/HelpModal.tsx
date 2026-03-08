@@ -53,6 +53,12 @@ export function HelpModal({ onClose }: HelpModalProps) {
             <strong className="text-slate-600">사용법:</strong> 할 일을 추가하면 두 가지 질문을 통해 자동으로 사분면에 배치됩니다. 가장 중요한 건 2사분면(계획 세우기)에 시간을 투자하는 것!
           </p>
         </div>
+
+        <div className="mt-3 rounded-lg bg-amber-50 p-3">
+          <p className="text-xs leading-relaxed text-amber-700">
+            <strong className="text-amber-800">광고 안내:</strong> 할 일 3개를 완료할 때마다 짧은 광고가 표시돼요. 무료로 앱을 유지하기 위한 소소한 지원이에요!
+          </p>
+        </div>
       </div>
     </>
   )

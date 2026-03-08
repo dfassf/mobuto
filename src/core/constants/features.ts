@@ -2,5 +2,5 @@ export const FEATURES = {
   analytics: false,
   premium: false,
   ads: false,
-  tossIntegration: false,
+  tossIntegration: true,
 } as const

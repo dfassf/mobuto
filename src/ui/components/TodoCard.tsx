@@ -1,16 +1,32 @@
-import { useState } from 'react'
+import { useRef, useState } from 'react'
 import { useSortable } from '@dnd-kit/sortable'
 import { CSS } from '@dnd-kit/utilities'
 import type { Todo } from '../../core/models/todo'
 import { useTodoStore } from '../../core/stores/todoStore'
 import { CategoryPicker } from './CategoryPicker'
+import { isAdsSupported, loadAndShowInterstitial } from '../../tossAds'
+import { fireConfetti, showToast } from '../effects'
+
+const AD_EVERY_N_COMPLETIONS = 3
 
 interface TodoCardProps {
   todo: Todo
 }
 
 export function TodoCard({ todo }: TodoCardProps) {
-  const { completeTodo, restoreTodo, deleteTodo, updateTodoTitle, updateTodoCategory, categories } = useTodoStore()
+  const { completeTodo, restoreTodo, deleteTodo, updateTodoTitle, updateTodoCategory, categories, completionCount } = useTodoStore()
+  const checkBtnRef = useRef<HTMLButtonElement>(null)
+
+  const handleComplete = () => {
+    completeTodo(todo.id)
+    fireConfetti(checkBtnRef.current)
+
+    const nextCount = completionCount + 1
+    if (isAdsSupported() && nextCount % AD_EVERY_N_COMPLETIONS === 0) {
+      showToast('잠시 후 광고가 표시됩니다', 1500)
+      setTimeout(() => loadAndShowInterstitial(), 1600)
+    }
+  }
   const [isEditing, setIsEditing] = useState(false)
   const [editTitle, setEditTitle] = useState(todo.title)
 
@@ -77,7 +93,8 @@ export function TodoCard({ todo }: TodoCardProps) {
       </div>
 
       <button
-        onClick={() => (isCompleted ? restoreTodo(todo.id) : completeTodo(todo.id))}
+        ref={checkBtnRef}
+        onClick={() => (isCompleted ? restoreTodo(todo.id) : handleComplete())}
         className={`flex h-5 w-5 shrink-0 items-center justify-center rounded-full border-2 transition-colors ${
           isCompleted
             ? 'border-emerald-500 bg-emerald-500 text-white'

@@ -1,0 +1,6 @@
+const DEFAULT_INTOSS_APP_NAME = 'mobuto'
+
+export const INTOSS_APP_NAME = (
+  import.meta.env.VITE_INTOSS_APP_NAME ||
+  DEFAULT_INTOSS_APP_NAME
+).trim() || DEFAULT_INTOSS_APP_NAME

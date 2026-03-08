@@ -12,6 +12,15 @@ dist
 dist-ssr
 *.local
 
+# Environment
+.env
+.env.local
+.env.development
+.env.production
+
+# App-in-Toss build artifacts
+*.ait
+
 # Editor directories and files
 .vscode/*
 !.vscode/extensions.json

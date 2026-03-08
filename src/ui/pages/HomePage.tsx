@@ -11,7 +11,7 @@ export function HomePage() {
 
   return (
     <div className="min-h-dvh bg-slate-50">
-      <div className="mx-auto max-w-2xl px-4 py-6 pb-24">
+      <div className="mx-auto max-w-2xl px-4 py-6 pb-[calc(6rem+env(safe-area-inset-bottom))]">
         <Header />
         <CategoryFilter selected={filterCategoryId} onSelect={setFilterCategoryId} />
 

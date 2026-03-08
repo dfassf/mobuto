@@ -10,6 +10,7 @@ interface TodoState {
   todos: Todo[]
   categories: Category[]
   deletedTodo: Todo | null
+  completionCount: number
 
   loadTodos: () => void
   addTodo: (input: CreateTodoInput) => void
@@ -47,6 +48,7 @@ export const useTodoStore = create<TodoState>((set, get) => ({
   todos: [],
   categories: [],
   deletedTodo: null,
+  completionCount: 0,
 
   loadTodos: () => {
     const saved = storage.loadAll()
@@ -89,7 +91,7 @@ export const useTodoStore = create<TodoState>((set, get) => ({
       if (todo.id !== id) return todo
       return { ...todo, status: 'completed' as const, completedAt: now, updatedAt: now }
     })
-    set({ todos: updated })
+    set({ todos: updated, completionCount: get().completionCount + 1 })
     storage.save(updated)
   },
 
