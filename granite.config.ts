@@ -7,7 +7,7 @@ const defaultIconUrl = 'https://mobuto.vercel.app/favicon-192.png'
 export default defineConfig({
   appName,
   brand: {
-    displayName: process.env.INTOSS_DISPLAY_NAME || '뭐부터',
+    displayName: process.env.INTOSS_DISPLAY_NAME || '모부터',
     primaryColor: process.env.INTOSS_PRIMARY_COLOR || '#334155',
     icon: process.env.INTOSS_ICON_URL || defaultIconUrl,
   },

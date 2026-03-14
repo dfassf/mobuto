@@ -26,7 +26,7 @@ export function showToast(message: string, durationMs = 2000) {
   el.textContent = message
   Object.assign(el.style, {
     position: 'fixed',
-    bottom: '80px',
+    bottom: '140px',
     left: '50%',
     transform: 'translateX(-50%)',
     background: 'rgba(30, 41, 59, 0.9)',
