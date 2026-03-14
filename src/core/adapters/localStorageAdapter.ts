@@ -18,7 +18,11 @@ export class LocalStorageAdapter implements StorageAdapter {
   }
 
   save(todos: Todo[]): void {
-    localStorage.setItem(TODOS_KEY, JSON.stringify(todos))
+    try {
+      localStorage.setItem(TODOS_KEY, JSON.stringify(todos))
+    } catch {
+      // 스토리지 차단/쿼터 초과 환경
+    }
   }
 
   loadCategories(): Category[] {
@@ -33,6 +37,10 @@ export class LocalStorageAdapter implements StorageAdapter {
   }
 
   saveCategories(categories: Category[]): void {
-    localStorage.setItem(CATEGORIES_KEY, JSON.stringify(categories))
+    try {
+      localStorage.setItem(CATEGORIES_KEY, JSON.stringify(categories))
+    } catch {
+      // 스토리지 차단/쿼터 초과 환경
+    }
   }
 }

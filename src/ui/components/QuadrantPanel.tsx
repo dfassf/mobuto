@@ -20,17 +20,11 @@ export function QuadrantPanel({ quadrant, filterCategoryId }: QuadrantPanelProps
   const { setNodeRef, isOver } = useDroppable({ id: `quadrant-${quadrant}` })
 
   const showUndo = deletedTodo?.quadrant === quadrant
-  const [fading, setFading] = useState(false)
 
   useEffect(() => {
-    if (!showUndo) {
-      setFading(false)
-      return
-    }
-    const fadeTimer = window.setTimeout(() => setFading(true), 4000)
+    if (!showUndo) return
     const clearTimer = window.setTimeout(() => clearDeletedTodo(), 5000)
     return () => {
-      window.clearTimeout(fadeTimer)
       window.clearTimeout(clearTimer)
     }
   }, [showUndo, deletedTodo?.id, clearDeletedTodo])
@@ -83,13 +77,13 @@ export function QuadrantPanel({ quadrant, filterCategoryId }: QuadrantPanelProps
           {todos.map((todo, i) => (
             <React.Fragment key={todo.id}>
               {showUndo && deletedTodo.status === 'active' && deletedTodo.order === i && (
-                <UndoBar title={deletedTodo.title} fading={fading} onUndo={handleUndo} />
+                <UndoBar title={deletedTodo.title} onUndo={handleUndo} />
               )}
               <TodoCard todo={todo} />
             </React.Fragment>
           ))}
         {showUndo && deletedTodo.status === 'active' && deletedTodo.order >= todos.length && (
-          <UndoBar title={deletedTodo.title} fading={fading} onUndo={handleUndo} />
+          <UndoBar title={deletedTodo.title} onUndo={handleUndo} />
         )}
 
         {completedTodos.length > 0 && (
@@ -109,7 +103,7 @@ export function QuadrantPanel({ quadrant, filterCategoryId }: QuadrantPanelProps
           </div>
         )}
         {showUndo && deletedTodo.status === 'completed' && (
-          <UndoBar title={deletedTodo.title} fading={fading} onUndo={handleUndo} />
+          <UndoBar title={deletedTodo.title} onUndo={handleUndo} />
         )}
         </SortableContext>
 
@@ -123,7 +117,14 @@ export function QuadrantPanel({ quadrant, filterCategoryId }: QuadrantPanelProps
   )
 }
 
-function UndoBar({ title, fading, onUndo }: { title: string; fading: boolean; onUndo: () => void }) {
+function UndoBar({ title, onUndo }: { title: string; onUndo: () => void }) {
+  const [fading, setFading] = useState(false)
+
+  useEffect(() => {
+    const fadeTimer = window.setTimeout(() => setFading(true), 4000)
+    return () => window.clearTimeout(fadeTimer)
+  }, [])
+
   return (
     <div
       className="flex items-center justify-between rounded-lg bg-white/60 px-3 py-2 backdrop-blur-sm border border-slate-200/50"

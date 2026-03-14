@@ -6,6 +6,7 @@ import { useTodoStore } from '../../core/stores/todoStore'
 import { CategoryPicker } from './CategoryPicker'
 import { isAdsSupported, loadAndShowInterstitial } from '../../tossAds'
 import { fireConfetti, showToast } from '../effects'
+import { incrementCompletionAdCounter } from '../../completionAdCounter'
 
 const AD_EVERY_N_COMPLETIONS = 3
 
@@ -14,14 +15,14 @@ interface TodoCardProps {
 }
 
 export function TodoCard({ todo }: TodoCardProps) {
-  const { completeTodo, restoreTodo, deleteTodo, updateTodoTitle, updateTodoCategory, categories, completionCount } = useTodoStore()
+  const { completeTodo, restoreTodo, deleteTodo, updateTodoTitle, updateTodoCategory, categories } = useTodoStore()
   const checkBtnRef = useRef<HTMLButtonElement>(null)
 
   const handleComplete = () => {
     completeTodo(todo.id)
     fireConfetti(checkBtnRef.current)
 
-    const nextCount = completionCount + 1
+    const nextCount = incrementCompletionAdCounter()
     if (isAdsSupported() && nextCount % AD_EVERY_N_COMPLETIONS === 0) {
       showToast('잠시 후 광고가 표시됩니다', 1500)
       setTimeout(() => loadAndShowInterstitial(), 1600)
